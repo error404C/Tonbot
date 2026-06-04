@@ -1,0 +1,799 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Ninja Ads Earn API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: users
+  - name: ads
+  - name: withdrawals
+  - name: tasks
+  - name: referrals
+  - name: settings
+  - name: admin
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get or create current user
+      parameters:
+        - name: telegramId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: username
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: firstName
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: referralCode
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/me/stats:
+    get:
+      operationId: getMyStats
+      tags: [users]
+      summary: Get current user stats
+      parameters:
+        - name: telegramId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserStats"
+
+  /ads/complete:
+    post:
+      operationId: completeAd
+      tags: [ads]
+      summary: Record completed ad view and credit user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdCompleteInput"
+      responses:
+        "200":
+          description: Reward credited
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdReward"
+
+  /ads/history:
+    get:
+      operationId: getAdHistory
+      tags: [ads]
+      summary: Get user ad watch history
+      parameters:
+        - name: telegramId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Ad history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdView"
+
+  /withdrawals:
+    get:
+      operationId: getWithdrawals
+      tags: [withdrawals]
+      summary: Get user withdrawal history
+      parameters:
+        - name: telegramId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Withdrawal history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Withdrawal"
+    post:
+      operationId: requestWithdrawal
+      tags: [withdrawals]
+      summary: Request a withdrawal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawalInput"
+      responses:
+        "200":
+          description: Withdrawal requested
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+
+  /leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [users]
+      summary: Get top earners
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Top earners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get platform settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformSettings"
+
+  /tasks:
+    get:
+      operationId: getTasks
+      tags: [tasks]
+      summary: Get active tasks with completion status
+      parameters:
+        - name: telegramId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tasks list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskWithStatus"
+
+  /tasks/{taskId}/complete:
+    post:
+      operationId: completeTask
+      tags: [tasks]
+      summary: Mark a task as completed and credit reward
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskCompleteInput"
+      responses:
+        "200":
+          description: Task completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskReward"
+
+  /referrals/stats:
+    get:
+      operationId: getReferralStats
+      tags: [referrals]
+      summary: Get user referral stats
+      parameters:
+        - name: telegramId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Referral stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralStats"
+
+  /admin/settings:
+    put:
+      operationId: updateAdminSettings
+      tags: [admin]
+      summary: Update platform settings (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSettingsInput"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformSettings"
+
+  /admin/tasks:
+    post:
+      operationId: createTask
+      tags: [admin]
+      summary: Create a new task (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminTaskInput"
+      responses:
+        "200":
+          description: Created task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /admin/tasks/{taskId}:
+    put:
+      operationId: updateTask
+      tags: [admin]
+      summary: Update a task (admin only)
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminTaskInput"
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+    delete:
+      operationId: deleteTask
+      tags: [admin]
+      summary: Delete a task (admin only)
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminAuthInput"
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /admin/withdrawals:
+    get:
+      operationId: getAdminWithdrawals
+      tags: [admin]
+      summary: Get all pending withdrawals (admin only)
+      parameters:
+        - name: adminTelegramId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            default: pending
+      responses:
+        "200":
+          description: All withdrawals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminWithdrawal"
+
+  /admin/withdrawals/{withdrawalId}/approve:
+    post:
+      operationId: approveWithdrawal
+      tags: [admin]
+      summary: Approve a withdrawal (admin only)
+      parameters:
+        - name: withdrawalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminAuthInput"
+      responses:
+        "200":
+          description: Approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /admin/withdrawals/{withdrawalId}/reject:
+    post:
+      operationId: rejectWithdrawal
+      tags: [admin]
+      summary: Reject a withdrawal (admin only)
+      parameters:
+        - name: withdrawalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminAuthInput"
+      responses:
+        "200":
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Get platform stats (admin only)
+      parameters:
+        - name: adminTelegramId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Platform stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
+  /admin/users:
+    get:
+      operationId: getAdminUsers
+      tags: [admin]
+      summary: Get all users (admin only)
+      parameters:
+        - name: adminTelegramId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Users list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    User:
+      type: object
+      required: [id, telegramId, balance, totalEarned, adsWatched, createdAt]
+      properties:
+        id:
+          type: integer
+        telegramId:
+          type: string
+        username:
+          type: ["string", "null"]
+        firstName:
+          type: ["string", "null"]
+        balance:
+          type: number
+        totalEarned:
+          type: number
+        adsWatched:
+          type: integer
+        createdAt:
+          type: string
+
+    UserStats:
+      type: object
+      required: [balance, totalEarned, adsWatched, todayEarned, todayAds, pendingWithdrawals, referralCount]
+      properties:
+        balance:
+          type: number
+        totalEarned:
+          type: number
+        adsWatched:
+          type: integer
+        todayEarned:
+          type: number
+        todayAds:
+          type: integer
+        pendingWithdrawals:
+          type: number
+        referralCount:
+          type: integer
+
+    AdCompleteInput:
+      type: object
+      required: [telegramId]
+      properties:
+        telegramId:
+          type: string
+        username:
+          type: string
+        firstName:
+          type: string
+
+    AdReward:
+      type: object
+      required: [earned, newBalance, totalEarned]
+      properties:
+        earned:
+          type: number
+        newBalance:
+          type: number
+        totalEarned:
+          type: number
+
+    AdView:
+      type: object
+      required: [id, earned, createdAt]
+      properties:
+        id:
+          type: integer
+        earned:
+          type: number
+        createdAt:
+          type: string
+
+    WithdrawalInput:
+      type: object
+      required: [telegramId, amount, method, destination]
+      properties:
+        telegramId:
+          type: string
+        amount:
+          type: number
+        method:
+          type: string
+        destination:
+          type: string
+
+    Withdrawal:
+      type: object
+      required: [id, amount, method, destination, status, createdAt]
+      properties:
+        id:
+          type: integer
+        amount:
+          type: number
+        method:
+          type: string
+        destination:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+
+    LeaderboardEntry:
+      type: object
+      required: [rank, telegramId, totalEarned, adsWatched]
+      properties:
+        rank:
+          type: integer
+        telegramId:
+          type: string
+        username:
+          type: ["string", "null"]
+        firstName:
+          type: ["string", "null"]
+        totalEarned:
+          type: number
+        adsWatched:
+          type: integer
+
+    PlatformSettings:
+      type: object
+      required: [earnPerAd, referralReward, minWithdrawal]
+      properties:
+        earnPerAd:
+          type: number
+        referralReward:
+          type: number
+        minWithdrawal:
+          type: number
+        addTaskUrl:
+          type: ["string", "null"]
+
+    AdminSettingsInput:
+      type: object
+      required: [adminTelegramId]
+      properties:
+        adminTelegramId:
+          type: string
+        earnPerAd:
+          type: number
+        referralReward:
+          type: number
+        minWithdrawal:
+          type: number
+        addTaskUrl:
+          type: string
+
+    Task:
+      type: object
+      required: [id, title, description, reward, isActive, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        reward:
+          type: number
+        url:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+
+    TaskWithStatus:
+      type: object
+      required: [id, title, description, reward, isActive, completed, submissionStatus, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        reward:
+          type: number
+        url:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        completed:
+          type: boolean
+        submissionStatus:
+          type: string
+          enum: [none, pending, approved, rejected]
+        createdAt:
+          type: string
+
+    TaskCompleteInput:
+      type: object
+      required: [telegramId]
+      properties:
+        telegramId:
+          type: string
+
+    TaskReward:
+      type: object
+      required: [earned, newBalance]
+      properties:
+        earned:
+          type: number
+        newBalance:
+          type: number
+
+    AdminTaskInput:
+      type: object
+      required: [adminTelegramId, title, description, reward]
+      properties:
+        adminTelegramId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        reward:
+          type: number
+        url:
+          type: string
+        isActive:
+          type: boolean
+
+    AdminAuthInput:
+      type: object
+      required: [adminTelegramId]
+      properties:
+        adminTelegramId:
+          type: string
+
+    ReferralStats:
+      type: object
+      required: [referralCode, totalReferrals, totalEarned, referrals]
+      properties:
+        referralCode:
+          type: string
+        totalReferrals:
+          type: integer
+        totalEarned:
+          type: number
+        referrals:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReferralItem"
+
+    ReferralItem:
+      type: object
+      required: [username, joinedAt, rewardGiven]
+      properties:
+        username:
+          type: ["string", "null"]
+        firstName:
+          type: ["string", "null"]
+        joinedAt:
+          type: string
+        rewardGiven:
+          type: boolean
+
+    AdminWithdrawal:
+      type: object
+      required: [id, amount, method, destination, status, createdAt, user]
+      properties:
+        id:
+          type: integer
+        amount:
+          type: number
+        method:
+          type: string
+        destination:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+        user:
+          $ref: "#/components/schemas/AdminWithdrawalUser"
+
+    AdminWithdrawalUser:
+      type: object
+      required: [telegramId]
+      properties:
+        telegramId:
+          type: string
+        username:
+          type: ["string", "null"]
+        firstName:
+          type: ["string", "null"]
+
+    AdminStats:
+      type: object
+      required: [totalUsers, totalAdsWatched, totalEarned, totalWithdrawn, pendingWithdrawals, activeTasks]
+      properties:
+        totalUsers:
+          type: integer
+        totalAdsWatched:
+          type: integer
+        totalEarned:
+          type: number
+        totalWithdrawn:
+          type: number
+        pendingWithdrawals:
+          type: number
+        activeTasks:
+          type: integer
+
+    OkResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean

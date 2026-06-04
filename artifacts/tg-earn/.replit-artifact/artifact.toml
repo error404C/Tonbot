@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Telegram Earn App"
+version = "1.0.0"
+id = "artifacts/tg-earn"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18661
+
+[services.development]
+run = "pnpm --filter @workspace/tg-earn run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/tg-earn", "run", "build" ]
+publicDir = "artifacts/tg-earn/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18661"
+BASE_PATH = "/"

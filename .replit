@@ -1,0 +1,46 @@
+modules = ["nodejs-24"]
+
+[deployment]
+router = "application"
+deploymentTarget = "autoscale"
+
+[deployment.postBuild]
+args = ["pnpm", "store", "prune"]
+env = { "CI" = "true" }
+
+[workflows]
+runButton = "Project"
+
+[agent]
+stack = "PNPM_WORKSPACE"
+expertMode = true
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
+
+[[ports]]
+localPort = 8080
+externalPort = 80
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 18661
+externalPort = 3000
+
+[userenv]
+
+[userenv.shared]
+BOT_TOKEN = "8882429190:AAEn0aI-B3kx9RWSOfrlsvDBrx5G768bhi8"
+VITE_BOT_USERNAME = "Tonstreamreward_bot"
+
+[userenv.development]
+ADMIN_TELEGRAM_ID = "7578254597"
+VITE_ADMIN_TELEGRAM_ID = "7578254597"
+
+[userenv.production]
+ADMIN_TELEGRAM_ID = "7516308032"
+VITE_ADMIN_TELEGRAM_ID = "7516308032"
